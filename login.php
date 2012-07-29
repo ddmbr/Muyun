@@ -7,7 +7,6 @@
     <body>
         <div class="container">
             <form class="well" id="loginform">
-            <!-- <form class="well" id="loginform" method="post" action="http://omegaga.net:8000/login/"> -->
                 <label>Username or Email</label>
                 <input type="text" class="input-large" id="username" name="username"/>
                 <label>Password</label>
@@ -25,9 +24,10 @@
                     type: "POST",
                     cache: false,
                     dataType: "json",
+                    crossDomain: true,
                     data: $(this).serialize(),
                     success: function (data) {
-                        alert(data);
+                        alert(data.myInfo.username);
                     }
                 });
                 return false;
