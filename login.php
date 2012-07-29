@@ -7,10 +7,13 @@
     <body>
         <div class="container">
             <form class="well" id="loginform">
+            <!-- <form class="well" id="loginform" method="post" action="http://omegaga.net:8000/login/"> -->
                 <label>Username or Email</label>
                 <input type="text" class="input-large" id="username" name="username"/>
                 <label>Password</label>
                 <input type="password" class="input-large" id="password" name="password"/>
+                <label>Junk </label>
+                <input type="text" class="input-small" name="pushToken" />
                 <br />
                 <button type="submit" class="btn btn-primary">Sign in</button>
             </form>
@@ -18,21 +21,15 @@
         <script>
             $("#loginform").bind("submit", function () {
                 $.ajax({
-                   url: "http://omegaga.net:8000/login/",
-                   type: "post",
-                   cache: false,
-                   dataType: "json", // for example
-                   //data: $(this).serialize(),
-                   success: function (data) { // data is the JS object based on the JSON returned
-                      if (data.success) {
-                         //$(this).fadeOut();
-                        alert(data)
-                      } else {
-                         alert("bad login: "+data.error);
-                      }
-                   }
+                    url: "http://omegaga.net:8000/login/",
+                    type: "POST",
+                    cache: false,
+                    dataType: "json",
+                    data: $(this).serialize(),
+                    success: function (data) {
+                        alert(data);
+                    }
                 });
-
                 return false;
             });
         </script>
