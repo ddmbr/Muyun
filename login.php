@@ -28,6 +28,12 @@
                     data: $(this).serialize(),
                     success: function (data) {
                         alert(data.myInfo.username);
+                        var url = 'user_mpanel.php';
+                        var form = $('<form action="' + url + '" method="post">' +
+                          '<input type="text" name="username" value="' + data.myInfo.username + '" />' +
+                          '</form>');
+                        $('body').append(form);
+                        $(form).submit();
                     }
                 });
                 return false;
