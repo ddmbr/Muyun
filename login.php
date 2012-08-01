@@ -11,14 +11,16 @@
                 <input type="text" class="input-large" id="username" name="username"/>
                 <label>Password</label>
                 <input type="password" class="input-large" id="password" name="password"/>
-                <label>Junk </label>
-                <input type="text" class="input-small" name="pushToken" />
+                <label>Junk</label>
+                <input type="text" class="input-small" name="pushToken"/>
                 <br />
-                <button type="submit" class="btn btn-primary">Sign in</button>
+                <button type="submit" class="btn btn-primary" id="submit_button">Sign in</button>
             </form>
         </div>
         <script>
             $("#loginform").bind("submit", function () {
+                $("#submit_button").addClass("disabled");
+                $("#submit_button").html("Loading");
                 $.ajax({
                     url: "http://omegaga.net:8000/login/",
                     type: "POST",
@@ -27,10 +29,9 @@
                     crossDomain: true,
                     data: $(this).serialize(),
                     success: function (data) {
-                        alert(data.myInfo.username);
                         var url = 'user_mpanel.php';
                         var form = $('<form action="' + url + '" method="post">' +
-                          '<input type="text" name="username" value="' + data.myInfo.username + '" />' +
+                          '<input type="text" name="username" value="' + data.username + '" />' +
                           '</form>');
                         $('body').append(form);
                         $(form).submit();
