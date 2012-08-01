@@ -111,17 +111,21 @@
                         data: "username="+username,
                         success: function(data) {
                             if (data.session_id != ''){
-                                session = TB.initSession(data.session_id);
-                                session.connect(apiKey, token)
-                                session.addEventListener('streamCreated', streamCreatedHandler);
-                                session.addEventListener('sessionConnected', sessionConnectedHandler);
-                                $("#conferencing_area").append("<div class='well' id='publisher' />")
+                                connect(data.sesion_id);
                             }
                         }
                     })
                 },
                 3000
             )
+
+            function connect(session_id){
+                session = TB.initSession(session_id);
+                session.connect(apiKey, token)
+                session.addEventListener('streamCreated', streamCreatedHandler);
+                session.addEventListener('sessionConnected', sessionConnectedHandler);
+                $("#conferencing_area").append("<div class='well' id='publisher' />")
+            }
 
             function addStream(stream) {
                 if (stream.connection.connectionId == session.connection.connectionId) {
