@@ -111,7 +111,7 @@
                         data: "username="+username,
                         success: function(data) {
                             if (data.session_id != ''){
-                                connect(data.sesion_id);
+                                connect(data.session_id);
                             }
                         }
                     })
@@ -121,10 +121,10 @@
 
             function connect(session_id){
                 session = TB.initSession(session_id);
-                session.connect(apiKey, token)
+                session.connect(apiKey, token);
                 session.addEventListener('streamCreated', streamCreatedHandler);
                 session.addEventListener('sessionConnected', sessionConnectedHandler);
-                $("#conferencing_area").append("<div class='well' id='publisher' />")
+                $("#conferencing_area").append("<div class='well' id='publisher' />");
             }
 
             function addStream(stream) {

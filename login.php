@@ -11,8 +11,6 @@
                 <input type="text" class="input-large" id="username" name="username"/>
                 <label>Password</label>
                 <input type="password" class="input-large" id="password" name="password"/>
-                <label>Junk</label>
-                <input type="text" class="input-small" name="pushToken"/>
                 <br />
                 <button type="submit" class="btn btn-primary" id="submit_button">Sign in</button>
             </form>
