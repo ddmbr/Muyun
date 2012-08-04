@@ -3,10 +3,12 @@
     <head>
         <link href="assets/css/bootstrap.css" rel="stylesheet">
         <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
-        <script src="http://static.opentok.com/v0.91/js/TB.min.js" ></script>
+        <!-- <script src="http://static.opentok.com/v0.91/js/TB.min.js" ></script> -->
+        <script src="assets/js/TB.min.js" ></script>
+        <script src="assets/js/bootstrap-dropdown.js" ></script>
     </head>
     <body>
-        <div class="container">
+        <div class="container" id="container">
             <div class="row">
                 <div class="span12">
                     <ul class="nav nav-tabs">
@@ -20,10 +22,11 @@
             <div class="row">
                 <div class="span8" id="conferencing_area">
                     <button class="btn"><?php echo $_POST["username"]; ?></button>
+                    <br />
                 </div>
                 <div class="span4">
                     <div class="well">
-                        <ul class="nav nav-list">
+                        <ul class="nav nav-list" id="contacts-list">
                             <!-- DEBUG PURPOSE-->
                             <li class="nav-header" id="contacts-list-head">Contacts</li>
                             <li class="contact">
@@ -35,7 +38,19 @@
                         </ul>
                     </div>
                     <button class="btn btn-primary" id="start_conference">Start Conference</button>
-                    <button class="btn">Call Translator Only</button>
+                    <p />
+                    <div class="btn-group">
+                        <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
+                            Call Translator Only
+                            <span class="caret"></span>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <!-- HARD CODED!-->
+                            <li id=0 class="trans_only_btn"><a>Chinese</a></li>
+                            <li id=1 class="trans_only_btn"><a>English</a></li>
+                            <li id=2 class="trans_only_btn"><a>Japanese</a></li>
+                        </ul>
+                    </div>
                 </div>
             </div>
         </div>
@@ -44,11 +59,13 @@
             var username = "<?php echo $_POST['username']?>";
             var address = "<?php echo $_SERVER['REMOTE_ADDR']?>";
             var session, my_session;
-            var apiKey = "16937882";
+            var apiKey = "16937882"; 
+            var target_language=-1;
+            var subscribers = {};
             //DEBUG PURPOSE
             var isPublisher = false;
  
-            TB.setLogLevel(TB.INFO)
+            TB.setLogLevel(TB.INFO);
 
             // Obtain contacts
             $.ajax({
@@ -63,21 +80,12 @@
                         $('<li class="contact"><a><i class="icon-user"></i>'+val.username+'</a>').insertAfter($('#contacts-list-head'));
                     });
                     $(".contact").click(function (){
-                        if($(".active")){
-                            $(".active").removeClass("active")
+                        if(target = $("#contacts-list").find(".active")){
+                            target.removeClass("active");
                         }
-                        $(this).addClass("active")
-                        alert("select!"+$(this).text());
+                        $(this).addClass("active");
                     });
                 }
-            });
-
-            $("#start_conference").click(function (){
-                session = my_session
-                isPublisher = true;
-                session.connect(apiKey, token)
-                $("#conferencing_area").append("<div class='well' id='publisher' />")
-                reciever = $(".active").text();
             });
 
             // Obtain the session ID and token
@@ -91,7 +99,6 @@
                 success: function(data) {
                     session_id = data.session_id;
                     token = data.token;
-                    alert(session_id+","+token);
                     my_session = TB.initSession(session_id);
                     // not necessary now
                     //session.connect(apiKey, token);
@@ -111,7 +118,9 @@
                         data: "username="+username,
                         success: function(data) {
                             if (data.session_id != ''){
-                                connect(data.session_id);
+                                token = data.token;
+                                session_id = data.session_id;
+                                connect();
                             }
                         }
                     })
@@ -119,7 +128,25 @@
                 3000
             )
 
-            function connect(session_id){
+            $("#start_conference").click(function (){
+                session = my_session;
+                isPublisher = true;
+                session.connect(apiKey, token);
+                $("#conferencing_area").append("<div class='well' id='publisher' />");
+                reciever = $("#contacts-list").find(".active").text();
+            });
+
+            $(".trans_only_btn").click(function (){
+                session = my_session;
+                isPublisher = true;
+                session.connect(apiKey, token);
+                $("#conferencing_area").append("<div class='well' id='publisher' />");
+                reciever = '';
+                target_language = $(this).attr("id");
+            });
+
+            function connect(){
+                //$("#container").prepend("<div class=\"alert alert-success\">"+session_id+"</div>")
                 session = TB.initSession(session_id);
                 session.connect(apiKey, token);
                 session.addEventListener('streamCreated', streamCreatedHandler);
@@ -131,19 +158,23 @@
                 if (stream.connection.connectionId == session.connection.connectionId) {
                     return;
                 }
-                $("#conferencing_area").append("<div class='well' id='"+stream.streamId+"' />")
-                subscribers[stream.streamId] = session.subscribe(stream, divId);
+                $("#conferencing_area").append("<div class='well' id='"+stream.streamId+"' />");
+                subscribers[stream.streamId] = session.subscribe(stream, stream.streamId);
             }
 
             function streamCreatedHandler(event) {
-                alert("stream created handler triggered");
+                subscribeToStream(event);
+            }
+
+            function subscribeToStream(event){
+                //alert("subscribe stream");
                 for (var i = 0; i < event.streams.length; i++) {
                     addStream(event.streams[i]);
                 }
             }
 
-            function sessionConnectedHandler(){
-                alert(username+" connected");
+            function sessionConnectedHandler(event){
+                //alert(username+" connected");
                 publisher = TB.initPublisher(apiKey, 'publisher');
                 session.publish(publisher);
                 if (isPublisher){
@@ -153,11 +184,13 @@
                         cache: false,
                         dataType: "json",
                         crossDomain: true,
-                        data: "username="+username+"&callToUsername="+reciever,
+                        // TODO condition
+                        data: "username="+username+"&callToUsername="+reciever+"&language="+target_language,
                         success: function(data) {
                         }
                     });
                 }
+                subscribeToStream(event);
             }
         </script>
     </body>
