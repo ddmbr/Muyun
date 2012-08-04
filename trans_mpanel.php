@@ -58,7 +58,6 @@
             )
 
             function connect(){
-                $("#container").prepend("<div class=\"alert alert-success\">"+session_id+"</div>")
                 session = TB.initSession(session_id);
                 session.connect(apiKey, token);
                 session.addEventListener('streamCreated', streamCreatedHandler);

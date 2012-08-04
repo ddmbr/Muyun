@@ -6,6 +6,16 @@
     </head>
     <body>
         <div class="container">
+            <?php
+                if(isset($_GET['err']))
+                {
+                    if($_GET['err'] == 1)
+                    {
+                        $err_msg = 'Please login first';
+                    }
+                    echo '<div class="alert alert-error">'.$err_msg.'</div>';
+                }
+            ?>
             <form class="well" id="loginform">
                 <label>Username or Email</label>
                 <input type="text" class="input-large" id="username" name="username"/>

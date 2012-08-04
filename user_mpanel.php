@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <?php
     if(!isset($_POST["username"]))
-        header( 'Location: login.php' ) ;
+        header( 'Location: login.php?err=1' ) ;
 ?>
 <html>
     <head>
