@@ -1,4 +1,8 @@
 <!DOCTYPE html>
+<?php
+    if(!isset($_POST["username"]))
+        header( 'Location: login.php' ) ;
+?>
 <html>
     <head>
         <link href="assets/css/bootstrap.css" rel="stylesheet">
@@ -55,6 +59,7 @@
             </div>
         </div>
         <script>
+
             var session_id, token;
             var username = "<?php echo $_POST['username']?>";
             var address = "<?php echo $_SERVER['REMOTE_ADDR']?>";
