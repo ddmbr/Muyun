@@ -86,7 +86,7 @@
 
             function sessionConnectedHandler(event){
                 alert(username+" connected");
-                publisher = TB.initPublisher(apiKey, 'publisher');
+                publisher = TB.initPublisher(apiKey, 'publisher', {name: "interpreter"});
                 session.publish(publisher);
                 if (isPublisher){
                     $.ajax({

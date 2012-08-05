@@ -180,7 +180,7 @@
 
             function sessionConnectedHandler(event){
                 //alert(username+" connected");
-                publisher = TB.initPublisher(apiKey, 'publisher');
+                publisher = TB.initPublisher(apiKey, 'publisher', {name:username});
                 session.publish(publisher);
                 if (isPublisher){
                     $.ajax({
