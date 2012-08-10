@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <link href="assets/css/bootstrap.css" rel="stylesheet">
+    <script src="http://staging.tokbox.com/v0.91/js/TB.min.js" type="text/javascript" charset="utf-8"></script>
         <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
         <!-- <script src="http://static.opentok.com/v0.91/js/TB.min.js" ></script> -->
-        <script src="assets/js/TB.min.js" ></script>
         <script src="assets/js/bootstrap-dropdown.js" ></script>
+        <link href="assets/css/bootstrap.css" rel="stylesheet">
     </head>
     <body>
         <div class="container" id="container">
@@ -24,7 +24,7 @@
                 </div>
             </div>
         </div>
-        <script>
+        <script type="text/javascript" charset="utf-8">
             var session_id, token;
             var username = "<?php echo $_POST['username']?>";
             var address = "<?php echo $_SERVER['REMOTE_ADDR']?>";
@@ -33,6 +33,7 @@
             var subscribers = {};
             //DEBUG PURPOSE
             var isPublisher = false;
+            var isInVideoCall = false;
  
             TB.setLogLevel(TB.INFO);
 
@@ -46,9 +47,10 @@
                         crossDomain: true,
                         data: "username="+username,
                         success: function(data) {
-                            if (data.session_id != ''){
-                                token = data.token;
-                                session_id = data.session_id;
+                            if (data.sessionId != '' && isInVideoCall==false){
+                                token = data.token; 
+                                session_id = data.sessionId;
+                                isInVideoCall = true;
                                 connect();
                             }
                         }
@@ -58,11 +60,13 @@
             )
 
             function connect(){
+                isInVideoCall = true
                 session = TB.initSession(session_id);
-                session.connect(apiKey, token);
-                session.addEventListener('streamCreated', streamCreatedHandler);
                 session.addEventListener('sessionConnected', sessionConnectedHandler);
+                session.addEventListener('connectionCreated', connectionCreatedHandler);
+                session.addEventListener('streamCreated', streamCreatedHandler);
                 $("#conferencing_area").append("<div class='well' id='publisher' />");
+                session.connect(apiKey, token);
             }
 
             function addStream(stream) {
@@ -74,8 +78,12 @@
             }
 
             function streamCreatedHandler(event) {
-                subscribeToStream(event);
+                for (var i = 0; i < event.streams.length; i++) {
+                    TB.log("streamCreated - connectionId: " + event.streams[i].connection.connectionId);
+                    TB.log("streamCreated - connectionData: " + event.streams[i].connection.data);
+                    addStream(event.streams[i]);
             }
+}
 
             function subscribeToStream(event){
                 alert("subscribe stream");
@@ -84,23 +92,19 @@
                 }
             }
 
+            function connectionCreatedHandler(event) {
+                // TODO
+            }
+
             function sessionConnectedHandler(event){
-                alert(username+" connected");
-                publisher = TB.initPublisher(apiKey, 'publisher', {name: "interpreter"});
-                session.publish(publisher);
-                if (isPublisher){
-                    $.ajax({
-                        url: "http://omegaga.net:8000/videoCallTo/",
-                        type: "POST",
-                        cache: false,
-                        dataType: "json",
-                        crossDomain: true,
-                        data: "username="+username+"&callToUsername="+reciever,
-                        success: function(data) {
-                        }
-                    });
+                //alert(username+" connected");
+                
+                
+                for (var i = 0; i < event.streams.length; i++) {
+                    addStream(event.streams[i]);
                 }
-                subscribeToStream(event);
+                publisher = TB.initPublisher(apiKey, 'publisher', {name:username});
+                session.publish(publisher);
             }
         </script>
     </body>
