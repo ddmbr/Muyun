@@ -6,10 +6,11 @@
 <html>
     <head>
         <link href="assets/css/bootstrap.css" rel="stylesheet">
-        <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
-        <!-- <script src="http://static.opentok.com/v0.91/js/TB.min.js" ></script> -->
-         <!--<script src="assets/js/TB.min.js" ></script>-->
-    <script src="http://staging.tokbox.com/v0.91/js/TB.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="assets/js/jquery.min.js" ></script>
+        <!-- <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script> -->
+        <script src="http://static.opentok.com/v0.91/js/TB.min.js" ></script>
+        <!-- <script src="http://staging.tokbox.com/v0.91/js/TB.min.js" type="text/javascript" charset="utf-8"></script> -->
+        <!-- <script src="http://static.opentok.com/v0.92-alpha/js/TB.min.js" type="text/javascript"></script>-->
 
         <script src="assets/js/bootstrap-dropdown.js" ></script>
     </head>
@@ -125,7 +126,6 @@
                         data: "username="+username,
                         success: function(data) {
                             if (data.sessionId != '' && isInVideoCall==false){
-                                alert(data);
                                 token = data.token; 
                                 session_id = data.sessionId;
                                 isInVideoCall = true;
@@ -150,7 +150,6 @@
                         data: "username="+username+"&callToUsername="+reciever+"&language="+target_language,
                         success: function(data) {
                             token = data.token;
-                            alert(token);
                             connect();
                         }
                     });
@@ -170,22 +169,18 @@
                         data: "username="+username+"&callToUsername="+reciever+"&language="+target_language,
                         success: function(data) {
                             token = data.token;
-                            alert(token);
                             connect();
                         }
                     });
             });
 
             function connect(){
-                //$("#container").prepend("<div class=\"alert alert-success\">"+session_id+"</div>")
-                //shi jianhong gai de
                 isInVideoCall = true
                 session = TB.initSession(session_id);
                 session.addEventListener('sessionConnected', sessionConnectedHandler);
                 session.addEventListener('connectionCreated', connectionCreatedHandler);
                 session.addEventListener('streamCreated', streamCreatedHandler);
-                $("#conferencing_area").append("<div class='well' id='publisher' />");
-                alert(token);
+                $("#conferencing_area").append("<div id='publisher' />");
                 session.connect(apiKey, token);
             }
 
@@ -194,7 +189,7 @@
                     return;
                 }
 
-                $("#conferencing_area").append("<div class='well' id='"+stream.streamId+"' />");
+                $("#conferencing_area").append("<div id='"+stream.streamId+"' />");
                 subscribers[stream.streamId] = session.subscribe(stream, stream.streamId);
             }
 
@@ -212,9 +207,6 @@
             }
 
             function sessionConnectedHandler(event){
-                //alert(username+" connected");
-                
-                
                 for (var i = 0; i < event.streams.length; i++) {
                     addStream(event.streams[i]);
                 }

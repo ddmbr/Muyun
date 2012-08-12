@@ -1,7 +1,9 @@
 <!DOCTYPE html>
 <html>
     <head>
-    <script src="http://staging.tokbox.com/v0.91/js/TB.min.js" type="text/javascript" charset="utf-8"></script>
+        <!-- <script src="http://static.opentok.com/v0.92-alpha/js/TB.min.js" type="text/javascript"></script>-->
+        <!-- <script src="http://staging.tokbox.com/v0.91/js/TB.min.js" type="text/javascript" charset="utf-8"></script> -->
+        <script src="http://static.opentok.com/v0.91/js/TB.min.js" ></script>
         <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
         <!-- <script src="http://static.opentok.com/v0.91/js/TB.min.js" ></script> -->
         <script src="assets/js/bootstrap-dropdown.js" ></script>
@@ -65,7 +67,7 @@
                 session.addEventListener('sessionConnected', sessionConnectedHandler);
                 session.addEventListener('connectionCreated', connectionCreatedHandler);
                 session.addEventListener('streamCreated', streamCreatedHandler);
-                $("#conferencing_area").append("<div class='well' id='publisher' />");
+                $("#conferencing_area").append("<div id='publisher' />");
                 session.connect(apiKey, token);
             }
 
@@ -73,7 +75,7 @@
                 if (stream.connection.connectionId == session.connection.connectionId) {
                     return;
                 }
-                $("#conferencing_area").append("<div class='well' id='"+stream.streamId+"' />");
+                $("#conferencing_area").append("<div id='"+stream.streamId+"' />");
                 subscribers[stream.streamId] = session.subscribe(stream, stream.streamId);
             }
 
@@ -103,7 +105,7 @@
                 for (var i = 0; i < event.streams.length; i++) {
                     addStream(event.streams[i]);
                 }
-                publisher = TB.initPublisher(apiKey, 'publisher', {name:username});
+                publisher = TB.initPublisher(apiKey, 'publisher', {name:"interpreter"});
                 session.publish(publisher);
             }
         </script>
