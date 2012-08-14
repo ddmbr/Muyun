@@ -157,16 +157,15 @@
 
             $(".trans_only_btn").click(function (){
                 isPublisher = true;
-                reciever = '';
                 target_language = $(this).attr("id");
                     $.ajax({
-                        url: "http://omegaga.net:8000/videoCallTo/",
+                        url: "http://omegaga.net:8000/interpreterVideoCallTo/",
                         type: "POST",
                         cache: false,
                         dataType: "json",
                         crossDomain: true,
                         // TODO condition
-                        data: "username="+username+"&callToUsername="+reciever+"&language="+target_language,
+                        data: "username="+username+"&targetLanguage="+target_language,
                         success: function(data) {
                             token = data.token;
                             connect();
