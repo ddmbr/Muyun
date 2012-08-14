@@ -39,7 +39,10 @@
                     crossDomain: true,
                     data: $(this).serialize(),
                     success: function (data) {
-                        var url = 'user_mpanel.php';
+                        if (data.privilege_id == '0')
+                            url = 'user_mpanel.php';
+                        else if(data.privilege_id == '2')
+                            url = 'trans_mpanel.php';
                         var form = $('<form action="' + url + '" method="post">' +
                           '<input type="text" name="username" value="' + data.username + '" />' +
                           '</form>');
