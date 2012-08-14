@@ -6,12 +6,9 @@
 <html>
     <head>
         <link href="assets/css/bootstrap.css" rel="stylesheet">
-        <script src="assets/js/jquery.min.js" ></script>
-        <!-- <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script> -->
-        <script src="http://static.opentok.com/v0.91/js/TB.min.js" ></script>
-        <!-- <script src="http://staging.tokbox.com/v0.91/js/TB.min.js" type="text/javascript" charset="utf-8"></script> -->
-        <!-- <script src="http://static.opentok.com/v0.92-alpha/js/TB.min.js" type="text/javascript"></script>-->
-
+        <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+        <!-- <script src="http://static.opentok.com/v0.91/js/TB.min.js" ></script> -->
+        <script src="assets/js/TB.min.js" ></script>
         <script src="assets/js/bootstrap-dropdown.js" ></script>
     </head>
     <body>
@@ -61,18 +58,17 @@
                 </div>
             </div>
         </div>
-        <script type="text/javascript" charset="utf-8">
+        <script>
 
             var session_id, token;
             var username = "<?php echo $_POST['username']?>";
             var address = "<?php echo $_SERVER['REMOTE_ADDR']?>";
-            var session;
-            var apiKey = 16937882; 
+            var session, my_session;
+            var apiKey = "16937882"; 
             var target_language=-1;
             var subscribers = {};
             //DEBUG PURPOSE
             var isPublisher = false;
-            var isInVideoCall = false;
  
             TB.setLogLevel(TB.INFO);
 
@@ -106,12 +102,14 @@
                 crossDomain: true,
                 data: "username="+username+"&address="+address,
                 success: function(data) {
-                    session_id = data.sessionId;
-                    //token = data.token;
-                    
+                    session_id = data.session_id;
+                    token = data.token;
+                    my_session = TB.initSession(session_id);
                     // not necessary now
                     //session.connect(apiKey, token);
-                    
+                    my_session.addEventListener('sessionConnected', sessionConnectedHandler);
+                    my_session.addEventListener('connectionCreated', connectionCreatedHandler);
+                    my_session.addEventListener('streamCreated', streamCreatedHandler);
                 }
             });
             
@@ -125,10 +123,9 @@
                         crossDomain: true,
                         data: "username="+username,
                         success: function(data) {
-                            if (data.sessionId != '' && isInVideoCall==false){
-                                token = data.token; 
-                                session_id = data.sessionId;
-                                isInVideoCall = true;
+                            if (data.session_id != ''){
+                                token = data.token;
+                                session_id = data.session_id;
                                 connect();
                             }
                         }
@@ -139,58 +136,35 @@
 
             $("#start_conference").click(function (){
                 isPublisher = true;
+                my_session.connect(apiKey, token);
+                $("#conferencing_area").append("<div class='well' id='publisher' />");
                 reciever = $("#contacts-list").find(".active").text();
-                    $.ajax({
-                        url: "http://omegaga.net:8000/videoCallTo/",
-                        type: "POST",
-                        cache: false,
-                        dataType: "json",
-                        crossDomain: true,
-                        // TODO condition
-                        data: "username="+username+"&callToUsername="+reciever+"&language="+target_language,
-                        success: function(data) {
-                            token = data.token;
-                            connect();
-                        }
-                    });
             });
 
             $(".trans_only_btn").click(function (){
                 isPublisher = true;
+                my_session.connect(apiKey, token);
+                $("#conferencing_area").append("<div class='well' id='publisher' />");
                 reciever = '';
                 target_language = $(this).attr("id");
-                    $.ajax({
-                        url: "http://omegaga.net:8000/videoCallTo/",
-                        type: "POST",
-                        cache: false,
-                        dataType: "json",
-                        crossDomain: true,
-                        // TODO condition
-                        data: "username="+username+"&callToUsername="+reciever+"&language="+target_language,
-                        success: function(data) {
-                            token = data.token;
-                            connect();
-                        }
-                    });
             });
 
             function connect(){
-                isInVideoCall = true
-                session = TB.initSession(session_id);
-                session.addEventListener('sessionConnected', sessionConnectedHandler);
-                session.addEventListener('connectionCreated', connectionCreatedHandler);
-                session.addEventListener('streamCreated', streamCreatedHandler);
-                $("#conferencing_area").append("<div id='publisher' />");
-                session.connect(apiKey, token);
+                //$("#container").prepend("<div class=\"alert alert-success\">"+session_id+"</div>")
+                //shi jianhong gai de
+               // session = TB.initSession(session_id);
+                my_session.connect(apiKey, token);
+                //session.addEventListener('streamCreated', streamCreatedHandler);
+                //session.addEventListener('sessionConnected', sessionConnectedHandler);
+                $("#conferencing_area").append("<div class='well' id='publisher' />");
             }
 
             function addStream(stream) {
-                if (stream.connection.connectionId == session.connection.connectionId) {
+                if (stream.connection.connectionId == my_session.connection.connectionId) {
                     return;
                 }
-
-                $("#conferencing_area").append("<div id='"+stream.streamId+"' />");
-                subscribers[stream.streamId] = session.subscribe(stream, stream.streamId);
+                $("#conferencing_area").append("<div class='well' id='"+stream.streamId+"' />");
+                subscribers[stream.streamId] = my_session.subscribe(stream, stream.streamId);
             }
 
             function streamCreatedHandler(event) {
@@ -202,16 +176,31 @@
                 }
             }
 
-            function connectionCreatedHandler(event) {
-                // TODO
-            }
-
-            function sessionConnectedHandler(event){
+            function subscribeToStream(event){
+                //alert("subscribe stream");
                 for (var i = 0; i < event.streams.length; i++) {
                     addStream(event.streams[i]);
                 }
+            }
+
+            function sessionConnectedHandler(event){
+                //alert(username+" connected");
                 publisher = TB.initPublisher(apiKey, 'publisher', {name:username});
-                session.publish(publisher);
+                my_session.publish(publisher);
+                if (isPublisher){
+                    $.ajax({
+                        url: "http://omegaga.net:8000/videoCallTo/",
+                        type: "POST",
+                        cache: false,
+                        dataType: "json",
+                        crossDomain: true,
+                        // TODO condition
+                        data: "username="+username+"&callToUsername="+reciever+"&language="+target_language,
+                        success: function(data) {
+                        }
+                    });
+                }
+                subscribeToStream(event);
             }
         </script>
     </body>
