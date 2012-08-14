@@ -32,16 +32,14 @@
                     <br />
                 </div>
                 <div class="span4">
+                    <form class="well form-inline" id="add_contact_form">
+                        <input type="text" class="input-small" id="new_contact" name="targetUsername" placeholder="New contact..."/>
+                        <button type="submit" class="btn btn-primary" id="add_contact_button">Add</button>
+                    </form>
                     <div class="well">
                         <ul class="nav nav-list" id="contacts-list">
                             <!-- DEBUG PURPOSE-->
                             <li class="nav-header" id="contacts-list-head">Contacts</li>
-                            <li class="contact">
-                                <a><i class="icon-user"></i>Chen Jianlin</a>
-                            </li>
-                            <li class="contact">
-                                <a><i class="icon-book"></i>Young Fan</a>
-                            </li>
                         </ul>
                     </div>
                     <button class="btn btn-primary" id="start_conference">Start Conference</button>
@@ -77,25 +75,7 @@
             TB.setLogLevel(TB.INFO);
 
             // Obtain contacts
-            $.ajax({
-                url: "http://omegaga.net:8000/contacts/",
-                type: "POST",
-                cache: false,
-                dataType: "json",
-                crossDomain: true,
-                data: "username="+username,
-                success: function(data) {
-                    $.each(data.contacts, function(key,val){
-                        $('<li class="contact"><a><i class="icon-user"></i>'+val.username+'</a>').insertAfter($('#contacts-list-head'));
-                    });
-                    $(".contact").click(function (){
-                        if(target = $("#contacts-list").find(".active")){
-                            target.removeClass("active");
-                        }
-                        $(this).addClass("active");
-                    });
-                }
-            });
+            getContact();
 
             // Obtain the session ID and token
             $.ajax({
@@ -149,6 +129,7 @@
                         // TODO condition
                         data: "username="+username+"&callToUsername="+reciever+"&language="+target_language,
                         success: function(data) {
+                            session_id = data.sessionId;
                             token = data.token;
                             connect();
                         }
@@ -167,12 +148,34 @@
                         // TODO condition
                         data: "username="+username+"&targetLanguage="+target_language,
                         success: function(data) {
+                            session_id = data.sessionId;
                             token = data.token;
                             connect();
                         }
                     });
             });
 
+            function getContact() {
+                $.ajax({
+                    url: "http://omegaga.net:8000/contacts/",
+                    type: "POST",
+                    cache: false,
+                    dataType: "json",
+                    crossDomain: true,
+                    data: "username="+username,
+                    success: function(data) {
+                        $.each(data.contacts, function(key,val){
+                            $('<li class="contact"><a><i class="icon-user"></i>'+val.username+'</a>').insertAfter($('#contacts-list-head'));
+                        });
+                        $(".contact").click(function (){
+                            if(target = $("#contacts-list").find(".active")){
+                                target.removeClass("active");
+                            }
+                            $(this).addClass("active");
+                        });
+                    }
+                });
+            }
             function connect(){
                 isInVideoCall = true
                 session = TB.initSession(session_id);
@@ -193,6 +196,7 @@
             }
 
             function streamCreatedHandler(event) {
+                alert('hey');
                 // Subscribe to the newly created streams
                 for (var i = 0; i < event.streams.length; i++) {
                     TB.log("streamCreated - connectionId: " + event.streams[i].connection.connectionId);
@@ -202,16 +206,33 @@
             }
 
             function connectionCreatedHandler(event) {
+                alert('hey');
                 // TODO
             }
 
             function sessionConnectedHandler(event){
+                alert("hey");
                 for (var i = 0; i < event.streams.length; i++) {
                     addStream(event.streams[i]);
                 }
                 publisher = TB.initPublisher(apiKey, 'publisher', {name:username});
                 session.publish(publisher);
             }
+
+            $("#add_contact_form").bind("submit", function () {
+                $.ajax({
+                    url: "http://omegaga.net:8000/addContact/",
+                    type: "POST",
+                    cache: false,
+                    dataType: "json",
+                    crossDomain: true,
+                    data: $(this).serialize()+"&username="+username,
+                    success: function (data) {
+                        getContact();
+                    }
+                });
+                return false;
+            });
         </script>
     </body>
 </html>
